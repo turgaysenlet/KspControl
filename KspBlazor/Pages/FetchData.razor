@@ -1,0 +1,124 @@
+﻿@page "/fetchdata"
+@using KspBlazor.Data
+@inject KspDataService kspDataService
+
+<PageTitle>KSP Control</PageTitle>
+
+<h3>Time @MyData.Hour:@MyData.Minute:@MyData.Seconds</h3>
+<h2>Active Vessel @MyData.ActiveVesselName</h2>
+<h3>Altitude @SurfaceAltitude.ToString("#0.00") m</h3>
+@*<h1> <input @bind="@kspDataService.KspDataProperty" /></h1>*@
+@*<button class="btn btn-primary" @bind:after="@kspDataService.KspDataProperty">Click me</button>*@
+<p>
+    <RadzenRadialGauge Style="width: 100%; height: 300px;">
+        <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="20" Min="0" Max="260" TickPosition=0>
+            <RadzenRadialGaugeScalePointer Value=@SurfaceAltitude Length="0.6" ShowValue=true>
+                <Template Context="pointer">
+                    <h4>
+                        @SurfaceAltitude.ToString("#0.00") <sup>m</sup>
+                    </h4>
+                </Template>
+            </RadzenRadialGaugeScalePointer>
+            <RadzenRadialGaugeScaleRange From="0" To="90" Fill="green" />
+            <RadzenRadialGaugeScaleRange From="90" To="140" Fill="orange" />
+            <RadzenRadialGaugeScaleRange From="140" To="260" Fill="red" />
+        </RadzenRadialGaugeScale>
+    </RadzenRadialGauge>
+</p>
+<p>
+<RadzenButton Click=LightsToggle Text="@LightsOn"></RadzenButton>
+</p>
+<p>
+    <RadzenButton Click=BrakesToggle Text="@BrakesOn"></RadzenButton>
+</p>
+@if (MyData == null || MyData.Vessels == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Crew</th>
+                <th>Orbit</th>
+                <th>Liquid Fuel</th>
+                <th>Electric Charge</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vessel in MyData.Vessels)
+            {
+                <tr>
+                    <td>@vessel.Name (@vessel.Type)</td>
+                    <td>@vessel.Crew.Count / @vessel.CrewCapacity</td>
+                    <td>@vessel.Orbit.Body.Name</td>
+                    <td>@vessel.Resources.Amount("LiquidFuel")</td>
+                    <td>@vessel.Resources.Amount("ElectricCharge")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </p>
+}
+
+@code {
+    private KspData? kspData;    
+    protected override async Task OnInitializedAsync()
+    {
+        kspData = await kspDataService.GetDataAsync();
+    }
+    [Parameter]
+    public int CurrentCounterValue { get; set; } = 0;
+    [Parameter]
+    public string LightsOn { get; set; } = @"Lights Off";
+    [Parameter]
+    public string BrakesOn { get; set; } = @"Brakes Off";
+    [Parameter]
+    public double SurfaceAltitude { get; set; } = 0;
+    [Parameter]
+    public KspData MyData { get; set; } = new KspData();
+    System.Threading.Timer timer;
+    public void LightsToggle()
+    {
+        if (MyData != null && MyData.Control != null)
+        {
+            MyData.Control.Lights = !MyData.Control.Lights;
+        }
+    }
+    public void BrakesToggle()
+    {
+        if (MyData != null && MyData.Control != null)
+        {
+            MyData.Control.Brakes = !MyData.Control.Brakes;
+        }
+    }
+    protected override void OnInitialized()
+    {
+        timer = new System.Threading.Timer(async _ =>  // async void
+        {
+            try
+            {
+                kspDataService.Refresh();
+                MyData = kspDataService.kspData;
+                CurrentCounterValue = MyData.Seconds;
+                if (MyData != null && MyData.Control != null)
+                {
+                    LightsOn = "Lights " + (MyData.Control.Lights ? "On" : "Off");
+                    BrakesOn = "Brakes " + (MyData.Control.Brakes ? "On" : "Off");
+                }
+                if (MyData.Flight != null)
+                {
+                    SurfaceAltitude = MyData.Flight.SurfaceAltitude;
+                }
+                // we need StateHasChanged() because this is an async void handler
+                // we need to Invoke it because we could be on the wrong Thread
+
+                await InvokeAsync(StateHasChanged);
+            }
+            catch { }
+        }, null, 0, 200);
+    }
+}

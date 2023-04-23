@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="KRPC.Client" Version="0.5.2" />
+    <PackageReference Include="Radzen.Blazor" Version="4.10.0" />
+  </ItemGroup>
+
+</Project>

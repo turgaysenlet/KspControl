@@ -1,0 +1,50 @@
+﻿@page "/counter"
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
+
+<RadzenButton Text="@text"></RadzenButton>
+@code {
+    string text = "Hi";
+}
+
+<RadzenRadialGauge Style="width: 100%; height: 300px;">
+    <RadzenRadialGaugeScale StartAngle="-150" EndAngle="150" Step="20" Min="0" Max="260" TickPosition=0>
+        <RadzenRadialGaugeScalePointer Value=45 Length="0.6" ShowValue=true>
+            <Template Context="pointer">
+                <h4>
+                    @pointer.Value <sup>km/h</sup>
+                </h4>
+            </Template>
+        </RadzenRadialGaugeScalePointer>
+        <RadzenRadialGaugeScaleRange From="0" To="90" Fill="green" />
+        <RadzenRadialGaugeScaleRange From="90" To="140" Fill="orange" />
+        <RadzenRadialGaugeScaleRange From="140" To="260" Fill="red" />
+    </RadzenRadialGaugeScale>
+</RadzenRadialGauge>
+@*<RadzenChart>
+    <RadzenAreaSeries Smooth="@smooth" Data="@revenue2019" CategoryProperty="Date" Title="2019" ValueProperty="Revenue" RenderingOrder="1">
+        <RadzenSeriesDataLabels Visible="@showDataLabels" />
+    </RadzenAreaSeries>
+    <RadzenAreaSeries Smooth="@smooth" Data="@revenue2020" CategoryProperty="Date" Title="2020" LineType="LineType.Dashed" ValueProperty="Revenue">
+        <RadzenSeriesDataLabels Visible="@showDataLabels" />
+    </RadzenAreaSeries>
+    <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+    <RadzenValueAxis Formatter="@FormatAsUSD">
+        <RadzenGridLines Visible="true" />
+        <RadzenAxisTitle Text="Revenue in USD" />
+    </RadzenValueAxis>
+</RadzenChart>*@
